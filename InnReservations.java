@@ -12,6 +12,8 @@ public class InnReservations {
       static boolean roomsFilled = false;
       static boolean reservationsFilled = false;
 		static Connection conn = null;
+      static String cur = "";
+      static int state = 1;
 	
 	public static void main(String args[]) {
 		
@@ -94,6 +96,17 @@ public class InnReservations {
             }
          catch(Exception e) {System.out.println(e); }
       
+      //main loop
+      while(state > 0) {
+            System.out.println("Enter A for Admin");
+            System.out.println("Enter O for Owner");
+            System.out.println("Enter G for Guest");
+            System.out.println("Enter E for Exit");
+            Scanner scan = new Scanner(System.in);
+            String s = scan.next();
+            if(s.equals("E"))
+               state = 0;
+      }
          
       //closes connection
 		try {
