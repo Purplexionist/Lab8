@@ -1,0 +1,3 @@
+jdbc:mysql://cslvm74.csc.calpoly.edu/weggert
+weggert
+8494561
