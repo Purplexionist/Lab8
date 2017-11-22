@@ -4,17 +4,17 @@ import java.sql.*;
 import java.lang.*;
 
 public class InnReservations {
-	
+	   static String url = null;
+		static String user = null;
+		static String pw = null;
+      static boolean roomsExist = false;
+      static boolean reservationsExist = false;
+      static boolean roomsFilled = false;
+      static boolean reservationsFilled = false;
+		static Connection conn = null;
 	
 	public static void main(String args[]) {
-		String url = null;
-		String user = null;
-		String pw = null;
-      boolean roomsExist = false;
-      boolean reservationsExist = false;
-      boolean roomsFilled = false;
-      boolean reservationsFilled = false;
-		Connection conn = null;
+		
       
       //reads server settings
 		try {
@@ -84,12 +84,12 @@ public class InnReservations {
                Statement s3 = conn.createStatement();
                ResultSet rs = s3.executeQuery("SELECT COUNT(*) FROM rooms");
                rs.next();
-               if(rs.getInt() > 0)
+               if(rs.getInt(1) > 0)
                   roomsFilled = true;
                Statement s4 = conn.createStatement();
                rs = s4.executeQuery("SELECT COUNT(*) FROM reservations");
                rs.next();
-               if(rs.getInt() > 0)
+               if(rs.getInt(1) > 0)
                   roomsFilled = true;
             }
          catch(Exception e) {System.out.println(e); }
