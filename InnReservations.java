@@ -14,6 +14,7 @@ public class InnReservations {
 		static Connection conn = null;
       static String cur = "";
       static int state = 1;
+      static int adminState;
 	
 	public static void main(String args[]) {
 		
@@ -98,6 +99,7 @@ public class InnReservations {
       
       //main loop
       while(state > 0) {
+            adminState = 1;
             System.out.println("Enter A for Admin");
             System.out.println("Enter O for Owner");
             System.out.println("Enter G for Guest");
@@ -106,6 +108,8 @@ public class InnReservations {
             String s = scan.next();
             if(s.equals("E"))
                state = 0;
+            else if(s.equals("A"))
+               runAdmin();
       }
          
       //closes connection
@@ -116,4 +120,39 @@ public class InnReservations {
 			 System.out.println("ex177: Unable to close connection");
 		      };
 	}
+   
+   public static void runAdmin() {
+      Statement s;
+      ResultSet rs;
+      Scanner scan = new Scanner(System.in);
+      while(adminState > 0) {
+         System.out.println();
+         if(!roomsExist)
+            System.out.println("No database");
+         else {
+            if(roomsFilled)
+               System.out.println("Full");
+            else
+               System.out.println("Empty");
+         }
+         try {
+         s = conn.createStatement();
+         rs = s.executeQuery("SELECT COUNT(*) FROM reservations");
+         rs.next();
+         System.out.println("Reservations: "+rs.getInt(1));
+         rs = s.executeQuery("SELECT COUNT(*) FROM rooms");
+         rs.next();
+         System.out.println("Rooms: "+rs.getInt(1));
+         }
+         catch(Exception e) { }
+         System.out.println("Enter V to view tables");
+         System.out.println("Enter C to clear tables");
+         System.out.println("Enter L to load tables");
+         System.out.println("Enter R to remove tables");
+         System.out.println("Enter E to switch user type");
+         String curS = scan.next();
+         if(curS.equals("E"))
+            adminState = 0;
+      }
+   }     
 }
