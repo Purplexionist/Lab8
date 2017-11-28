@@ -386,7 +386,8 @@ public class InnReservations {
             System.out.println("Enter anything else to return to guest menu");
             room = s.next();
             if(room.equals("C"))
-               checkAvai(roomNum, rs.getString("RoomCode"),  rs.getFloat("basePrice"), rs.getString("RoomName"));
+               checkAvai(roomNum, rs.getString("RoomCode"),  rs.getFloat("basePrice"), rs.getString("RoomName"),
+            rs.getInt("maxOcc"));
          }
       }
       catch(Exception e){System.out.println("Bad input");}
@@ -395,7 +396,7 @@ public class InnReservations {
          System.out.println("Tables not created/filled");
    }
    
-   public static void checkAvai(int roomNum, String roomCode, double bP, String roomName) throws ParseException {
+   public static void checkAvai(int roomNum, String roomCode, double bP, String roomName, int occ) throws ParseException {
       boolean occupied = false;
       System.out.println("\nEnter the CheckIn date in YYYY DD MM format");
       Scanner scan = new Scanner(System.in);
@@ -460,7 +461,7 @@ public class InnReservations {
          Scanner newNew = new Scanner(System.in);
          if(newNew.next().equals("P"))
             System.out.println("place a res");
-            //completeReservation(starts, ends, bP*mult, roomCode, roomName);
+               completeReservation(starts, ends, (float)bP*(float)mult, roomCode, roomName, occ);
       }
    }
    
@@ -543,7 +544,7 @@ public class InnReservations {
          System.out.println("Enter anything else to return to guest menu");
          Scanner sce = new Scanner(System.in);
          int sca = sce.nextInt();
-         if(sca > 0 && sca < validRooms.size()) {
+         if(sca > 0 && sca < validRooms.size() + 1) {
             s = conn.prepareStatement("SELECT * FROM rooms WHERE RoomCode = '"+validRooms.get(sca-1)+"'");
             rs = s.executeQuery();
             rs.next();
@@ -557,10 +558,74 @@ public class InnReservations {
             System.out.print(rs.getString("decor")+"  ");
             System.out.println("\nEnter P to place a reservation\nEnter anything else to return to guest menu");
             if(sce.next().equals("P"))
-               //completeReservation(starts, ends, rs.getFloat("basePrice")*(float)mult,
-            //rs.getString("RoomCode"), rs.getString("RoomName"));
+               completeReservation(starts, ends, rs.getFloat("basePrice")*(float)mult,
+                  rs.getString("RoomCode"), rs.getString("RoomName"), rs.getInt("maxOcc"));
          }
       }
       catch(Exception e) { System.out.println(e); }
    }
+   
+   public static void completeReservation(Date starts, Date ends, float basePrice, String RoomCode,
+      String RoomName, int occ) {
+         Scanner scan = new Scanner(System.in);
+         String first;
+         String last;
+         int adults = 0;
+         int kids = 0;
+         boolean bad = true;
+         String temp;
+         float disc = 1.0f;
+         try {
+            System.out.println("Enter first name");
+            first = scan.next();
+            System.out.println("Enter last name");
+            last = scan.next();
+            while(bad) {
+               System.out.println("Enter number of adults");
+               adults = scan.nextInt();
+               System.out.println("Enter number of kids");
+               kids = scan.nextInt();
+               if(adults + kids > occ)
+                  System.out.println("Total occupancy exceeds maximum of "+occ);
+               else
+                  bad = false;
+            }
+            System.out.println("Enter AAA for 10% discount");
+            System.out.println("Enter AARP for 15% discount");
+            System.out.println("Enter anything else for no discount");
+            temp = scan.next();
+            if(temp.equals("AAA"))
+               disc = 0.9f;
+            else if(temp.equals("AARP"))
+               disc = 0.85f;
+            System.out.println("Enter P to place a reservation");
+            System.out.println("Enter anything else to cancel the reservation");
+            temp = scan.next();
+            if(temp.equals("P")) {
+               Statement sa = conn.createStatement();
+               ResultSet rsa = sa.executeQuery("SELECT CODE from reservations");
+               ArrayList<Integer> unique = new ArrayList<Integer>();
+               while(rsa.next())
+                  unique.add(rsa.getInt("CODE"));
+               int code = 100000;
+               while(unique.contains(code))
+                  code++;
+               PreparedStatement ps = conn.prepareStatement("INSERT INTO reservations VALUES(?,?,"+
+               "STR_TO_DATE(?,'%Y-%m-%d'),STR_TO_DATE(?,'%Y-%m-%d'),?,?,?,?,?)");
+               SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+               ps.setInt(1, code);
+               ps.setString(2, RoomCode);
+               ps.setString(3, sdf2.format(starts));
+               ps.setString(4, sdf2.format(ends));
+               ps.setFloat(5, basePrice*disc);
+               ps.setString(6, last.toUpperCase());
+               ps.setString(7, first.toUpperCase());
+               ps.setInt(8, adults);
+               ps.setInt(9, kids);
+               ps.executeUpdate();
+               System.out.println("Reservation has been placed");
+            }
+         }
+         catch(Exception e) { System.out.println(e); }
+      }
 }
