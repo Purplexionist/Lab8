@@ -365,9 +365,10 @@ public class InnReservations {
    // OR-1
    
    public static void runOccRev() {
-      System.out.println("\nOptions:");
+      System.out.println("Options:");
       System.out.println("1 - One day");
       System.out.println("2 - Date range");
+      System.out.print("Enter choice: ");
       Scanner slay = new Scanner(System.in);
       String na = slay.next();
       System.out.println("");
@@ -375,26 +376,119 @@ public class InnReservations {
          checkSingleAvail();
       else if (na.equals("2"))
          checkRangeAvail();
+      else
+         System.out.println("Invalid option");
    }
    
    public static void checkSingleAvail() {
-      System.out.println("Single date - enter values in numbers");
-      System.out.print("Enter day: ");
-      System.out.print("Enter year: ");
+      ResultSet rs;
+      PreparedStatement statement;
+      if (roomsExist && roomsFilled) {
+         int day = 0, month = 0;
+         Scanner scan = new Scanner(System.in);
+         System.out.println("Single date - enter values in numbers");
+         System.out.print("Enter day: ");
+         try {
+            day = scan.nextInt();
+         } catch (Exception e) {
+            System.out.println("Invalid number");
+            return;
+         }
+         System.out.print("Enter month: ");
+         try {
+            month = scan.nextInt();
+         } catch (Exception e) {
+            System.out.println("Invalid number");
+            return;
+         }
+         System.out.println();
+         try {
+            String date = "2010-" + month + "-" + day;
+            statement = conn.prepareStatement(""
+               + "select ro.RoomName, "
+               +     "case when ro.RoomName in ("
+               +        "select ro.RoomName "
+               +        "from rooms ro, reservations re "
+               +        "where ro.RoomCode = re.Room "
+               +           "and re.CheckIn <= ? "
+               +           "and ? < re.CheckOut"
+               +     ") then ? "
+               +          "else ? end as Vacancy "
+               + "from rooms ro"
+               + ";"
+            );
+            statement.setString(1, date);
+            statement.setString(2, date);
+            statement.setString(3, "Occupied");
+            statement.setString(4, "Empty");
+            System.out.printf("Date: %s\n", date);
+            rs = statement.executeQuery();
+            //System.out.printf("%3s%8s%7s%13s%13s%9s%16s%16s%9s%7s\n",
+            //   "No", "CODE", "Room", "CheckIn", "CheckOut", "Rate", "LastName", "FirstName", "Adults", "Kids");
+            int i = 1;
+            while (rs.next()) {
+               System.out.printf("%3d", i);
+               /*System.out.printf("%8s", rs.getInt("CODE"));
+               System.out.printf("%7s", rs.getString("Room"));
+               System.out.printf("%13s", rs.getDate("CheckIn"));
+               System.out.printf("%13s", rs.getDate("Checkout"));
+               System.out.printf("%9.2f", rs.getFloat("Rate"));
+               System.out.printf("%16s", rs.getString("LastName"));
+               System.out.printf("%16s", rs.getString("FirstName"));
+               System.out.printf("%9s", rs.getInt("Adults"));
+               System.out.printf("%7s", rs.getInt("Kids"));
+               */
+               System.out.printf("%25s | %s", rs.getString("RoomName"), rs.getString("Vacancy"));
+               System.out.println();
+               i++;
+            }
+            viewReservations(rs);
+         } catch (Exception e) {
+         }
+      } else {
+         System.out.println("Tables not created/filled");
+      }
+   }
+
+   public static void viewReservations(ResultSet rs) {
+      int view = 1;
+      Scanner scan = new Scanner(System.in);
+      do {
+         System.out.println();
+         System.out.println("Enter V to view reservation details");
+         System.out.println("Enter anything else to return to menu");
+         System.out.print("Input: ");
+         String input = scan.next();
+         if (input.toUpperCase().equals("V")) {
+            System.out.print("Enter room index from above list: ");
+            String index = scan.next();
+            String code;
+         } else {
+            view = 0;
+         }
+      } while (view > 0);
    }
    
    public static void checkRangeAvail() {
+      
    }
    
    // OR-2
    
    public static void runViewRev() {
+      
    }
    
+   // OR-3
+
    public static void runRevRooms() {
+      
    }
    
+   // OR-4
+
    public static void runRevRes() {
+      
    }
    
    // -- GUEST FUNCTIONS --
