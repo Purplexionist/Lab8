@@ -115,6 +115,8 @@ public class InnReservations {
             state = 0;
          else if (s.equals("A"))
             runAdmin();
+         else if (s.equals("O"))
+            runOwnerMenu();
          else if (s.equals("G"))
             runGuestMenu();
       }
@@ -127,6 +129,8 @@ public class InnReservations {
       }
       ;
    }
+   
+   // -- ADMIN FUNCTIONS --
 
    public static void runAdmin() {
       Statement s;
@@ -191,35 +195,38 @@ public class InnReservations {
             if (str.equals("Ro")) {
                statement = conn.prepareStatement("select * from rooms");
                rs = statement.executeQuery();
-               System.out.println("RoomCode  RoomName  Beds  bedType  Occupancy  Price  Decor");
+               System.out.printf("%3s%11s%27s%7s%10s%12s%9s%14s\n",
+                  "No", "RoomCode", "RoomName", "Beds", "bedType", "Occupancy", "Price", "Decor");
                while (rs.next()) {
-                  System.out.print(i + "  ");
-                  System.out.print(rs.getString("RoomCode") + "  ");
-                  System.out.print(rs.getString("RoomName") + "  ");
-                  System.out.print(rs.getInt("Beds") + "  ");
-                  System.out.print(rs.getString("bedType") + "  ");
-                  System.out.print(rs.getInt("maxOcc") + "  ");
-                  System.out.print(rs.getFloat("basePrice") + "  ");
-                  System.out.print(rs.getString("decor") + "  ");
-                  i++;
+                  System.out.printf("%3d", i);
+                  System.out.printf("%11s", rs.getString("RoomCode"));
+                  System.out.printf("%27s", rs.getString("RoomName"));
+                  System.out.printf("%7s", rs.getInt("Beds"));
+                  System.out.printf("%10s", rs.getString("bedType"));
+                  System.out.printf("%12s", rs.getInt("maxOcc"));
+                  System.out.printf("%9.2f", rs.getFloat("basePrice"));
+                  System.out.printf("%14s", rs.getString("decor"));
                   System.out.println();
+                  i++;
                }
             }
             if (str.equals("Re")) {
                statement = conn.prepareStatement("select * from reservations");
                rs = statement.executeQuery();
-               System.out.println("CODE Room CheckIn CheckOut Rate  LastName  FirstName  Adults  Kids");
+               System.out.printf("%3s%8s%7s%13s%13s%9s%16s%16s%9s%7s\n",
+                  "No", "CODE", "Room", "CheckIn", "CheckOut", "Rate", "LastName", "FirstName", "Adults", "Kids");
                while (rs.next()) {
-                  System.out.print(i + " ");
-                  System.out.print(rs.getInt("CODE") + " ");
-                  System.out.print(rs.getString("Room") + " ");
-                  System.out.print(rs.getDate("CheckIn") + " ");
-                  System.out.print(rs.getDate("Checkout") + " ");
-                  System.out.print(rs.getFloat("Rate") + " ");
-                  System.out.print(rs.getString("LastName") + " ");
-                  System.out.print(rs.getString("FirstName") + " ");
-                  System.out.print(rs.getInt("Adults") + " ");
-                  System.out.print(rs.getInt("Kids") + "\n");
+                  System.out.printf("%3d", i);
+                  System.out.printf("%8s", rs.getInt("CODE"));
+                  System.out.printf("%7s", rs.getString("Room"));
+                  System.out.printf("%13s", rs.getDate("CheckIn"));
+                  System.out.printf("%13s", rs.getDate("Checkout"));
+                  System.out.printf("%9.2f", rs.getFloat("Rate"));
+                  System.out.printf("%16s", rs.getString("LastName"));
+                  System.out.printf("%16s", rs.getString("FirstName"));
+                  System.out.printf("%9s", rs.getInt("Adults"));
+                  System.out.printf("%7s", rs.getInt("Kids"));
+                  System.out.println();
                   i++;
                }
             }
@@ -327,6 +334,70 @@ public class InnReservations {
          System.out.println(e);
       }
    }
+   
+   // -- OWNER FUNCTIONS --
+   
+   public static void runOwnerMenu() throws ParseException {
+      int ownerState = 1;
+      while (ownerState > 0) {
+         System.out.println("");
+         System.out.println("Enter Occ for occupancy review");
+         System.out.println("Enter Rev for view revenue");
+         System.out.println("Enter Ro for review rooms");
+         System.out.println("Enter Res for review reservations");
+         System.out.println("Enter E to return to switch user type");
+         Scanner slay = new Scanner(System.in);
+         String na = slay.next();
+         System.out.println("");
+         if (na.equals("E"))
+            ownerState = 0;
+         else if (na.equals("Occ"))
+            runOccRev();
+         else if (na.equals("Rev"))
+            runViewRev();
+         else if (na.equals("Ro"))
+            runRevRooms();
+         else if (na.equals("Res"))
+            runRevRes();
+      }
+   }
+   
+   // OR-1
+   
+   public static void runOccRev() {
+      System.out.println("\nOptions:");
+      System.out.println("1 - One day");
+      System.out.println("2 - Date range");
+      Scanner slay = new Scanner(System.in);
+      String na = slay.next();
+      System.out.println("");
+      if (na.equals("1"))
+         checkSingleAvail();
+      else if (na.equals("2"))
+         checkRangeAvail();
+   }
+   
+   public static void checkSingleAvail() {
+      System.out.println("Single date - enter values in numbers");
+      System.out.print("Enter day: ");
+      System.out.print("Enter year: ");
+   }
+   
+   public static void checkRangeAvail() {
+   }
+   
+   // OR-2
+   
+   public static void runViewRev() {
+   }
+   
+   public static void runRevRooms() {
+   }
+   
+   public static void runRevRes() {
+   }
+   
+   // -- GUEST FUNCTIONS --
 
    public static void runGuestMenu() throws ParseException {
       while (guestState > 0) {
@@ -377,14 +448,14 @@ public class InnReservations {
                rs.absolute(roomNum);
                System.out.println("");
                System.out.println("RoomCode  RoomName  Beds  bedType  Occupancy  Price  Decor");
-               System.out.print(rs.getString("RoomCode") + "  ");
-               System.out.print(rs.getString("RoomName") + "  ");
-               System.out.print(rs.getInt("Beds") + "  ");
-               System.out.print(rs.getString("bedType") + "  ");
-               System.out.print(rs.getInt("maxOcc") + "  ");
-               System.out.print(rs.getFloat("basePrice") + "  ");
-               System.out.print(rs.getString("decor") + "  ");
-               System.out.println("\n");
+               System.out.printf("%11s", rs.getString("RoomCode"));
+               System.out.printf("%27s", rs.getString("RoomName"));
+               System.out.printf("%7s", rs.getInt("Beds"));
+               System.out.printf("%10s", rs.getString("bedType"));
+               System.out.printf("%12s", rs.getInt("maxOcc"));
+               System.out.printf("%9.2f", rs.getFloat("basePrice"));
+               System.out.printf("%14s", rs.getString("decor"));
+               System.out.println();
                System.out.println("Enter C to check availability");
                System.out.println("Enter anything else to return to guest menu");
                room = s.next();
@@ -554,7 +625,8 @@ public class InnReservations {
             s = conn.prepareStatement("SELECT * FROM rooms WHERE RoomCode = '" + validRooms.get(sca - 1) + "'");
             rs = s.executeQuery();
             rs.next();
-            System.out.println("RoomCode  RoomName  Beds  bedType  Occupancy  Price  Decor");
+            System.out.printf("%3s%11s%27s%7s%10s%12s%9s%14s\n",
+               "No", "RoomCode", "RoomName", "Beds", "bedType", "Occupancy", "Price", "Decor");
             System.out.print(rs.getString("RoomCode") + "  ");
             System.out.print(rs.getString("RoomName") + "  ");
             System.out.print(rs.getInt("Beds") + "  ");
