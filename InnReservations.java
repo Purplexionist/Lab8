@@ -405,7 +405,7 @@ public class InnReservations {
          try {
             String date = "2010-" + month + "-" + day;
             statement = conn.prepareStatement(""
-               + "select ro.RoomName, "
+               + "select ro.RoomCode, ro.RoomName, "
                +     "case when ro.RoomName in ("
                +        "select ro.RoomName "
                +        "from rooms ro, reservations re "
@@ -423,26 +423,18 @@ public class InnReservations {
             statement.setString(4, "Empty");
             System.out.printf("Date: %s\n", date);
             rs = statement.executeQuery();
-            //System.out.printf("%3s%8s%7s%13s%13s%9s%16s%16s%9s%7s\n",
-            //   "No", "CODE", "Room", "CheckIn", "CheckOut", "Rate", "LastName", "FirstName", "Adults", "Kids");
             int i = 1;
+            System.out.printf("%3s%5s%25s | %s", "No", "CODE", "RoomName", "Vacancy\n");
+            String border = getBorder(3 + 5 + 25 + 3 + 8);
+            System.out.println(border);
             while (rs.next()) {
                System.out.printf("%3d", i);
-               /*System.out.printf("%8s", rs.getInt("CODE"));
-               System.out.printf("%7s", rs.getString("Room"));
-               System.out.printf("%13s", rs.getDate("CheckIn"));
-               System.out.printf("%13s", rs.getDate("Checkout"));
-               System.out.printf("%9.2f", rs.getFloat("Rate"));
-               System.out.printf("%16s", rs.getString("LastName"));
-               System.out.printf("%16s", rs.getString("FirstName"));
-               System.out.printf("%9s", rs.getInt("Adults"));
-               System.out.printf("%7s", rs.getInt("Kids"));
-               */
-               System.out.printf("%25s | %s", rs.getString("RoomName"), rs.getString("Vacancy"));
+               System.out.printf("%5s%25s | %s",
+                  rs.getString("RoomCode"), rs.getString("RoomName"), rs.getString("Vacancy"));
                System.out.println();
                i++;
             }
-            viewReservations(rs);
+            viewSingleRes(rs, date);
          } catch (Exception e) {
          }
       } else {
@@ -450,7 +442,11 @@ public class InnReservations {
       }
    }
 
-   public static void viewReservations(ResultSet rs) {
+   public static String getBorder(int times) {
+      return String.format("%0" + times + "d", 0).replace("0", "-");
+   }
+
+   public static void viewSingleRes(ResultSet rs, String date) {
       int view = 1;
       Scanner scan = new Scanner(System.in);
       do {
@@ -460,13 +456,50 @@ public class InnReservations {
          System.out.print("Input: ");
          String input = scan.next();
          if (input.toUpperCase().equals("V")) {
-            System.out.print("Enter room index from above list: ");
-            String index = scan.next();
-            String code;
+            System.out.print("Enter room code from above list: ");
+            String code = scan.next();
+            System.out.println();
+            getSingleRes(code, date);
          } else {
             view = 0;
          }
       } while (view > 0);
+   }
+
+   public static void getSingleRes(String code, String date) {
+      ResultSet rs;
+      try {
+         PreparedStatement statement = conn.prepareStatement(""
+            + "select ro.RoomName, re.* "
+            + "from rooms ro, reservations re "
+            + "where ro.RoomCode = re.Room "
+            +     "and ro.RoomCode = ? "
+            +     "and re.CheckIn <= ? "
+            +     "and ? < re.Checkout"
+            + ";"
+         );
+         statement.setString(1, code);
+         statement.setString(2, date);
+         statement.setString(3, date);
+         rs = statement.executeQuery();
+         System.out.printf("%25s%8s%7s%13s%13s%9s%16s%16s%9s%7s\n",
+            "RoomName", "CODE", "Room", "CheckIn", "CheckOut", "Rate", "LastName", "FirstName", "Adults", "Kids");
+         System.out.println(getBorder(25 + 8 + 7 + 13 + 13 + 9 + 16 + 16 + 9 + 7));
+         while (rs.next()) {
+            System.out.printf("%25s", rs.getString("RoomName"));
+            System.out.printf("%8s", rs.getInt("CODE"));
+            System.out.printf("%7s", rs.getString("Room"));
+            System.out.printf("%13s", rs.getDate("CheckIn"));
+            System.out.printf("%13s", rs.getDate("Checkout"));
+            System.out.printf("%9.2f", rs.getFloat("Rate"));
+            System.out.printf("%16s", rs.getString("LastName"));
+            System.out.printf("%16s", rs.getString("FirstName"));
+            System.out.printf("%9s", rs.getInt("Adults"));
+            System.out.printf("%7s", rs.getInt("Kids"));
+            System.out.println();
+         }
+       } catch (Exception e) {
+       }
    }
    
    public static void checkRangeAvail() {
