@@ -384,19 +384,19 @@ public class InnReservations {
       ResultSet rs;
       PreparedStatement statement;
       if (roomsExist && roomsFilled) {
-         int day = 0, month = 0;
+         int month = 0, day = 0;
          Scanner scan = new Scanner(System.in);
          System.out.println("Single date - enter values in numbers");
-         System.out.print("Enter day: ");
+         System.out.print("Enter month: ");
          try {
-            day = scan.nextInt();
+            month = scan.nextInt();
          } catch (Exception e) {
             System.out.println("Invalid number");
             return;
          }
-         System.out.print("Enter month: ");
+         System.out.print("Enter day: ");
          try {
-            month = scan.nextInt();
+            day = scan.nextInt();
          } catch (Exception e) {
             System.out.println("Invalid number");
             return;
@@ -424,8 +424,10 @@ public class InnReservations {
             System.out.printf("Date: %s\n", date);
             rs = statement.executeQuery();
             int i = 1;
-            System.out.printf("%3s%5s%25s | %s", "No", "CODE", "RoomName", "Vacancy\n");
-            String border = getBorder(3 + 5 + 25 + 3 + 8);
+            String headers = String.format("%3s%5s%25s | %s",
+               "No", "CODE", "RoomName", "Vacancy");
+            String border = getBorder(headers.length());
+            System.out.println(headers);
             System.out.println(border);
             while (rs.next()) {
                System.out.printf("%3d", i);
@@ -498,16 +500,104 @@ public class InnReservations {
             System.out.printf("%7s", rs.getInt("Kids"));
             System.out.println();
          }
-       } catch (Exception e) {
-       }
+      } catch (Exception e) {
+      }
    }
    
    public static void checkRangeAvail() {
-      
-   }
-   
+      ResultSet rs;
+      PreparedStatement statement;
+      if (roomsExist && roomsFilled) {
+         int[][] range = new int[2][2];
+         String startDate = "", endDate = "";
+         System.out.println("Date range - enter values in numbers");
+         for (int i = 0; i < 2; i++) {
+            System.out.println("Day " + (i + 1));
+            Scanner scan = new Scanner(System.in);
+            System.out.print("Enter month: ");
+            try {
+               range[i][0] = scan.nextInt();
+            } catch (Exception e) {
+               System.out.println("Invalid number");
+               return;
+            }
+            System.out.print("Enter day: ");
+            try {
+               range[i][1] = scan.nextInt();
+            } catch (Exception e) {
+               System.out.println("Invalid number");
+               return;
+            }
+            System.out.println();
+            
+            startDate = "2010-" + range[0][0] + "-" + range[0][1];
+            endDate = "2010-" + range[1][0] + "-" + range[1][1];
+         }
+         try {
+            statement = conn.prepareStatement(""
+               + "select ro.RoomCode, ro.RoomName, "
+               +    "case when res.Days IS NULL then ? " // ? 1
+               +          "when res.Days = DATEDIFF(?, ?) + 1 then ? " // ? 2, 3, 4
+               +          "else ? " // ? 5
+               +    "end as Vacancy "
+               + "from rooms ro "
+               +    "left outer join ( "
+               +       "select re.Room, count(distinct dates) as Days "
+               +       "from ( "
+               +          "select selected_date as dates "
+               +          "from "
+               +             "(select adddate('2010-1-1', t3.i*1000 + t2.i*100 + t1.i*10 + t0.i) selected_date from "
+               +             "(select 0 i union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t0, "
+               +             "(select 0 i union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t1, "
+               +             "(select 0 i union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t2, "
+               +             "(select 0 i union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t3) v "
+               +          "where selected_date between cast(? as date) and cast(? as date) " // ? 6, 7
+               +       ") as dates "
+               +       "left outer join ( "
+               +          "select re.Room, re.CODE, re.CheckIn, re.Checkout "
+               +          "from rooms ro, reservations re "
+               +          "where ro.RoomCode = re.Room "
+               +             "and ? < re.Checkout " // ? 8
+               +             "and re.CheckIn <= ? " // ? 9
+               +          "order by re.Room "
+               +       ") as re "
+               +       "on dates between cast(re.CheckIn as date) and cast(re.Checkout as date) "
+               +       "group by re.Room "
+               +       "order by re.Room, Days "
+               +    ") as res "
+               + "on ro.RoomCode = res.Room "
+               + ";"
+            );
+            statement.setString(1, "Vacant");
+            statement.setString(2, endDate);
+            statement.setString(3, startDate);
+            statement.setString(4, "Full");
+            statement.setString(5, "Partially Occupied");
+            statement.setString(6, startDate);
+            statement.setString(7, endDate);
+            statement.setString(8, startDate);
+            statement.setString(9, endDate);
+            rs = statement.executeQuery();
+            String headers = String.format("%8s%25s | %-18s",
+               "RoomCode", "RoomName", "Vacancy");
+            System.out.println(headers);
+            System.out.println(getBorder(headers.length()));
+            while (rs.next()) {
+               System.out.printf("%8s", rs.getString("RoomCode"));
+               System.out.printf("%25s | ", rs.getString("RoomName"));
+               System.out.printf("%-18s", rs.getString("Vacancy"));
+               System.out.println();
+            }
+         } catch (Exception e) {
+            System.out.println(e);
+         }
+      } else {
+         System.out.println("Tables not created/filled");
+      }
+   } 
+            
    // OR-2
-   
+         
    public static void runViewRev() {
       
    }
