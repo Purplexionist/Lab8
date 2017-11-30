@@ -458,7 +458,7 @@ public class InnReservations {
          System.out.print("Input: ");
          String input = scan.next();
          if (input.toUpperCase().equals("V")) {
-            System.out.print("Enter room code from above list: ");
+            System.out.print("Enter 3-digit room code from above list: ");
             String code = scan.next();
             System.out.println();
             getSingleRes(code, date);
@@ -598,6 +598,7 @@ public class InnReservations {
                System.out.printf("%-18s", rs.getString("Vacancy"));
                System.out.println();
             }
+            viewBriefRangeRes(rs, startDate, endDate);
          } catch (Exception e) {
             System.out.println(e);
          }
@@ -605,7 +606,105 @@ public class InnReservations {
          System.out.println("Tables not created/filled");
       }
    } 
-            
+   
+   public static void viewBriefRangeRes(ResultSet rs, String startDate, String endDate) {
+      int view = 1;
+      Scanner scan = new Scanner(System.in);
+      do {
+         System.out.println();
+         System.out.println("Enter V to view reservations");
+         System.out.println("Enter anything else to return to menu");
+         System.out.print("Input: ");
+         String input = scan.next();
+         if (input.toUpperCase().equals("V")) {
+            System.out.print("Enter 3-digit room code from above list: ");
+            String code = scan.next();
+            System.out.println();
+            getRangeRes(code, startDate, endDate);
+         } else {
+            view = 0;
+         }
+      } while (view > 0);
+   }
+   
+   public static void getRangeRes(String code, String startDate, String endDate) {
+      ResultSet rs;
+      try {
+         PreparedStatement statement = conn.prepareStatement(""
+            + "select re.Room, ro.RoomName, re.CODE, re.CheckIn, re.Checkout "
+            + "from rooms ro, reservations re "
+            + "where ro.RoomCode = re.Room "
+            +     "and ro.RoomCode = ? "
+            +     "and ? < re.Checkout "
+            +     "and re.CheckIn <= ? "
+            + ";"
+         );
+         statement.setString(1, code);
+         statement.setString(2, startDate);
+         statement.setString(3, endDate);
+         rs = statement.executeQuery();
+         displayBriefReservations(rs);
+         viewRangeRes();
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+   }
+   
+   public static void displayBriefReservations(ResultSet rs) {
+      String headers = String.format("%25s%8s%13s%13s",
+         "RoomName", "CODE", "CheckIn", "CheckOut");
+      System.out.println(headers);
+      System.out.println(getBorder(headers.length()));
+      try {
+         while (rs.next()) {
+            System.out.printf("%25s", rs.getString("RoomName"));
+            System.out.printf("%8s", rs.getInt("CODE"));
+            System.out.printf("%13s", rs.getDate("CheckIn"));
+            System.out.printf("%13s", rs.getDate("Checkout"));
+            System.out.println();
+         }
+      } catch (Exception e) {
+      }
+   }
+   
+   public static void viewRangeRes() {
+      int view = 1;
+      Scanner scan = new Scanner(System.in);
+      do {
+         System.out.println();
+         System.out.println("Enter D to view details");
+         System.out.println("Enter anything else to return to reservation briefs menu");
+         System.out.print("Input: ");
+         String input = scan.next();
+         if (input.toUpperCase().equals("D")) {
+            System.out.print("Enter 5-digit reservation code from above list: ");
+            String code = scan.next();
+            System.out.println();
+            getResDetails(code);
+         } else {
+            view = 0;
+         }
+      } while (view > 0);
+   }
+
+   public static void getResDetails(String code) {
+      ResultSet rs;
+      try {
+         PreparedStatement statement = conn.prepareStatement(""
+            + "select ro.RoomName, re.* "
+            + "from rooms ro, reservations re "
+            + "where ro.RoomCode = re.Room "
+            +     "and re.CODE = ? "
+            + ";"
+         );
+         statement.setString(1, code);
+         rs = statement.executeQuery();
+         displayReservations(rs);
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+   }
+   
    // OR-2
          
    public static void runViewRev() {
