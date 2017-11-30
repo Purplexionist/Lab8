@@ -343,8 +343,8 @@ public class InnReservations {
          System.out.println("");
          System.out.println("Enter Occ for occupancy review");
          System.out.println("Enter Rev for view revenue");
-         System.out.println("Enter Ro for review rooms");
          System.out.println("Enter Res for review reservations");
+         System.out.println("Enter Ro for review rooms");
          System.out.println("Enter E to return to switch user type");
          Scanner slay = new Scanner(System.in);
          String na = slay.next();
@@ -368,6 +368,7 @@ public class InnReservations {
       System.out.println("Options:");
       System.out.println("1 - One day");
       System.out.println("2 - Date range");
+      System.out.println("E - Return to Owner menu");
       System.out.print("Enter choice: ");
       Scanner slay = new Scanner(System.in);
       String na = slay.next();
@@ -376,6 +377,8 @@ public class InnReservations {
          checkSingleAvail();
       else if (na.equals("2"))
          checkRangeAvail();
+      else if (na.toUpperCase().equals("E"))
+         return;
       else
          System.out.println("Invalid option");
    }
@@ -453,7 +456,7 @@ public class InnReservations {
       Scanner scan = new Scanner(System.in);
       while (view = true) {
          System.out.println();
-         System.out.println("Enter 3-digit room code from above list to view reservation details");
+         System.out.println("Enter 3-digit room code to view reservation details");
          System.out.println("Enter E to return to menu");
          System.out.print("Input: ");
          String input = scan.next();
@@ -612,8 +615,8 @@ public class InnReservations {
       while (view = true) {
          System.out.println();
          // System.out.println("Enter V to view reservations");
-         System.out.println("Enter 3-digit room code from above list to view reservations");
-         System.out.println("Enter anything else to return to menu");
+         System.out.println("Enter 3-digit room code to view reservations");
+         System.out.println("Enter E to return to menu");
          System.out.print("Input: ");
          String input = scan.next();
          if (!input.toUpperCase().equals("E")) {
@@ -671,7 +674,7 @@ public class InnReservations {
       Scanner scan = new Scanner(System.in);
       while (view = true) {
          System.out.println();
-         System.out.println("Enter 5-digit reservation code from above list to view details");
+         System.out.println("Enter 5-digit reservation code to view details");
          System.out.println("Enter E to return to previous");
          System.out.print("Input: ");
          String input = scan.next();
@@ -706,19 +709,266 @@ public class InnReservations {
    // OR-2
          
    public static void runViewRev() {
-      
+      boolean loop = true;
+      while (loop = true) {
+         System.out.println("Options:");
+         System.out.println("1 - Reservation counts");
+         System.out.println("2 - Total days occupied");
+         System.out.println("3 - Monthly revenue");
+         System.out.println("E - Return to Owner menu");
+         System.out.print("Enter choice: ");
+         Scanner slay = new Scanner(System.in);
+         String na = slay.next();
+         System.out.println("");
+         if (na.equals("1"))
+            resCounts();
+         else if (na.equals("2"))
+            totalDaysOcc();
+         else if (na.equals("3"))
+            monthlyRev();
+         else if (na.toUpperCase().equals("E"))
+            return;
+         else
+            System.out.println("Invalid option");
+      }
+   }
+   
+   public static void resCounts() {
+      ResultSet rs;
+      PreparedStatement statement;
+      if (roomsExist && roomsFilled) {
+         try {
+            statement = conn.prepareStatement(""
+               + "select ro.RoomName, "
+               +    "sum(case when month(re.Checkout) = 1 then 1 else 0 end) as January, "
+               +    "sum(case when month(re.Checkout) = 2 then 1 else 0 end) as February, "
+               +    "sum(case when month(re.Checkout) = 3 then 1 else 0 end) as March, "
+               +    "sum(case when month(re.Checkout) = 4 then 1 else 0 end) as April, "
+               +    "sum(case when month(re.Checkout) = 5 then 1 else 0 end) as May, "
+               +    "sum(case when month(re.Checkout) = 6 then 1 else 0 end) as June, "
+               +    "sum(case when month(re.Checkout) = 7 then 1 else 0 end) as July, "
+               +    "sum(case when month(re.Checkout) = 8 then 1 else 0 end) as August, "
+               +    "sum(case when month(re.Checkout) = 9 then 1 else 0 end) as September, "
+               +    "sum(case when month(re.Checkout) = 10 then 1 else 0 end) as October, "
+               +    "sum(case when month(re.Checkout) = 11 then 1 else 0 end) as November, "
+               +    "sum(case when month(re.Checkout) = 12 then 1 else 0 end) as December, "
+               +    "count(*) as TOTALS "
+               + "from rooms ro, reservations re "
+               + "where ro.RoomCode = re.Room "
+               + "group by re.Room "
+               + "union "
+               + "select ?,  "
+               +    "sum(case when month(re.Checkout) = 1 then 1 else 0 end) as January, "
+               +    "sum(case when month(re.Checkout) = 2 then 1 else 0 end) as February, "
+               +    "sum(case when month(re.Checkout) = 3 then 1 else 0 end) as March, "
+               +    "sum(case when month(re.Checkout) = 4 then 1 else 0 end) as April, "
+               +    "sum(case when month(re.Checkout) = 5 then 1 else 0 end) as May, "
+               +    "sum(case when month(re.Checkout) = 6 then 1 else 0 end) as June, "
+               +    "sum(case when month(re.Checkout) = 7 then 1 else 0 end) as July, "
+               +    "sum(case when month(re.Checkout) = 8 then 1 else 0 end) as August, "
+               +    "sum(case when month(re.Checkout) = 9 then 1 else 0 end) as September, "
+               +    "sum(case when month(re.Checkout) = 10 then 1 else 0 end) as October, "
+               +    "sum(case when month(re.Checkout) = 11 then 1 else 0 end) as November, "
+               +    "sum(case when month(re.Checkout) = 12 then 1 else 0 end) as December, "
+               +    "count(*) as TOTALS "
+               + "from reservations re "
+               + ";"
+            );
+            statement.setString(1, "TOTALS");
+            rs = statement.executeQuery();
+            printResTables(rs);
+         } catch (Exception e) {
+            System.out.println(e);
+         }
+      }
+   }
+   
+   public static void totalDaysOcc() {
+      ResultSet rs;
+      PreparedStatement statement;
+      if (roomsExist && roomsFilled) {
+         try {
+            statement = conn.prepareStatement(""
+               + "select ro.RoomName, "
+               +    "sum(case when month(re.Checkout) = 1 then datediff(re.Checkout, re.CheckIn) else 0 end) as January, "
+               +    "sum(case when month(re.Checkout) = 2 then datediff(re.Checkout, re.CheckIn) else 0 end) as February, "
+               +    "sum(case when month(re.Checkout) = 3 then datediff(re.Checkout, re.CheckIn) else 0 end) as March, "
+               +    "sum(case when month(re.Checkout) = 4 then datediff(re.Checkout, re.CheckIn) else 0 end) as April, "
+               +    "sum(case when month(re.Checkout) = 5 then datediff(re.Checkout, re.CheckIn) else 0 end) as May, "
+               +    "sum(case when month(re.Checkout) = 6 then datediff(re.Checkout, re.CheckIn) else 0 end) as June, "
+               +    "sum(case when month(re.Checkout) = 7 then datediff(re.Checkout, re.CheckIn) else 0 end) as July, "
+               +    "sum(case when month(re.Checkout) = 8 then datediff(re.Checkout, re.CheckIn) else 0 end) as August, "
+               +    "sum(case when month(re.Checkout) = 9 then datediff(re.Checkout, re.CheckIn) else 0 end) as September, "
+               +    "sum(case when month(re.Checkout) = 10 then datediff(re.Checkout, re.CheckIn) else 0 end) as October, "
+               +    "sum(case when month(re.Checkout) = 11 then datediff(re.Checkout, re.CheckIn) else 0 end) as November, "
+               +    "sum(case when month(re.Checkout) = 12 then datediff(re.Checkout, re.CheckIn) else 0 end) as December, "
+               +    "sum(datediff(re.Checkout, re.CheckIn)) as TOTALS "
+               + "from rooms ro, reservations re "
+               + "where ro.RoomCode = re.Room "
+               + "group by re.Room "
+               + "union "
+               + "select ?,  "
+               +    "sum(case when month(re.Checkout) = 1 then datediff(re.Checkout, re.CheckIn) else 0 end) as January, "
+               +    "sum(case when month(re.Checkout) = 2 then datediff(re.Checkout, re.CheckIn) else 0 end) as February, "
+               +    "sum(case when month(re.Checkout) = 3 then datediff(re.Checkout, re.CheckIn) else 0 end) as March, "
+               +    "sum(case when month(re.Checkout) = 4 then datediff(re.Checkout, re.CheckIn) else 0 end) as April, "
+               +    "sum(case when month(re.Checkout) = 5 then datediff(re.Checkout, re.CheckIn) else 0 end) as May, "
+               +    "sum(case when month(re.Checkout) = 6 then datediff(re.Checkout, re.CheckIn) else 0 end) as June, "
+               +    "sum(case when month(re.Checkout) = 7 then datediff(re.Checkout, re.CheckIn) else 0 end) as July, "
+               +    "sum(case when month(re.Checkout) = 8 then datediff(re.Checkout, re.CheckIn) else 0 end) as August, "
+               +    "sum(case when month(re.Checkout) = 9 then datediff(re.Checkout, re.CheckIn) else 0 end) as September, "
+               +    "sum(case when month(re.Checkout) = 10 then datediff(re.Checkout, re.CheckIn) else 0 end) as October, "
+               +    "sum(case when month(re.Checkout) = 11 then datediff(re.Checkout, re.CheckIn) else 0 end) as November, "
+               +    "sum(case when month(re.Checkout) = 12 then datediff(re.Checkout, re.CheckIn) else 0 end) as December, "
+               +    "sum(datediff(re.Checkout, re.CheckIn)) as TOTALS "
+               + "from reservations re "
+               + ";"
+            );
+            statement.setString(1, "TOTALS");
+            rs = statement.executeQuery();
+            printResTables(rs);
+         } catch (Exception e) {
+            System.out.println(e);
+         }
+      }
+   }
+   
+   public static void monthlyRev() {
+      ResultSet rs;
+      PreparedStatement statement;
+      if (roomsExist && roomsFilled) {
+         try {
+            statement = conn.prepareStatement(""
+               + "select ro.RoomName, "
+               +    "sum(case when month(re.Checkout) = 1 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as January, "
+               +    "sum(case when month(re.Checkout) = 2 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as February, "
+               +    "sum(case when month(re.Checkout) = 3 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as March, "
+               +    "sum(case when month(re.Checkout) = 4 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as April, "
+               +    "sum(case when month(re.Checkout) = 5 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as May, "
+               +    "sum(case when month(re.Checkout) = 6 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as June, "
+               +    "sum(case when month(re.Checkout) = 7 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as July, "
+               +    "sum(case when month(re.Checkout) = 8 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as August, "
+               +    "sum(case when month(re.Checkout) = 9 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as September, "
+               +    "sum(case when month(re.Checkout) = 10 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as October, "
+               +    "sum(case when month(re.Checkout) = 11 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as November, "
+               +    "sum(case when month(re.Checkout) = 12 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as December, "
+               +    "sum(re.Rate * datediff(re.Checkout, re.CheckIn)) as TOTALS "
+               + "from rooms ro, reservations re "
+               + "where ro.RoomCode = re.Room "
+               + "group by re.Room "
+               + "union "
+               + "select ?,  "
+               +    "sum(case when month(re.Checkout) = 1 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as January, "
+               +    "sum(case when month(re.Checkout) = 2 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as February, "
+               +    "sum(case when month(re.Checkout) = 3 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as March, "
+               +    "sum(case when month(re.Checkout) = 4 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as April, "
+               +    "sum(case when month(re.Checkout) = 5 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as May, "
+               +    "sum(case when month(re.Checkout) = 6 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as June, "
+               +    "sum(case when month(re.Checkout) = 7 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as July, "
+               +    "sum(case when month(re.Checkout) = 8 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as August, "
+               +    "sum(case when month(re.Checkout) = 9 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as September, "
+               +    "sum(case when month(re.Checkout) = 10 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as October, "
+               +    "sum(case when month(re.Checkout) = 11 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as November, "
+               +    "sum(case when month(re.Checkout) = 12 then re.Rate * datediff(re.Checkout, re.CheckIn) else 0 end) as December, "
+               +    "sum(re.Rate * datediff(re.Checkout, re.CheckIn)) as TOTALS "
+               + "from reservations re "
+               + ";"
+            );
+            statement.setString(1, "TOTALS");
+            rs = statement.executeQuery();
+            printRevTable(rs);
+         } catch (Exception e) {
+            System.out.println(e);
+         }
+      }
+   }
+   
+   public static void printResTables(ResultSet rs) {
+      String headers = String.format(
+         "%27s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s",
+         "RoomName",
+         "January", "February", "March", "April", "May", "June",
+         "July", "August", "September", "October", "November", "December",
+         "TOTALS"
+      );
+      System.out.println(headers);
+      System.out.println(getBorder(headers.length()));
+      try {
+         while(rs.next()) {
+            System.out.printf(
+               "%27s%11d%11d%11d%11d%11d%11d%11d%11d%11d%11d%11d%11d%11s\n",
+               rs.getString("RoomName"), // 0
+               rs.getInt("January"), // 1
+               rs.getInt("February"), // 2
+               rs.getInt("March"), // 3
+               rs.getInt("April"), // 4
+               rs.getInt("May"), // 5
+               rs.getInt("June"), // 6
+               rs.getInt("July"), // 7
+               rs.getInt("August"), // 8
+               rs.getInt("September"), // 9
+               rs.getInt("October"), // 10
+               rs.getInt("November"), // 11
+               rs.getInt("December"), // 12
+               rs.getInt("TOTALS") // 13
+            );
+         }
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+   }
+   
+   public static void printRevTable(ResultSet rs) {
+      String headers = String.format(
+         "%27s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s",
+         "RoomName",
+         "January", "February", "March", "April", "May", "June",
+         "July", "August", "September", "October", "November", "December",
+         "TOTALS"
+      );
+      System.out.println(headers);
+      System.out.println(getBorder(headers.length()));
+      try {
+         while(rs.next()) {
+            System.out.printf(
+               "%27s%11.2f%11.2f%11.2f%11.2f%11.2f%11.2f%11.2f%11.2f%11.2f%11.2f%11.2f%11.2f%11.2f\n",
+               rs.getString("RoomName"), // 0
+               rs.getFloat("January"), // 1
+               rs.getFloat("February"), // 2
+               rs.getFloat("March"), // 3
+               rs.getFloat("April"), // 4
+               rs.getFloat("May"), // 5
+               rs.getFloat("June"), // 6
+               rs.getFloat("July"), // 7
+               rs.getFloat("August"), // 8
+               rs.getFloat("September"), // 9
+               rs.getFloat("October"), // 10
+               rs.getFloat("November"), // 11
+               rs.getFloat("December"), // 12
+               rs.getFloat("TOTALS") // 13
+            );
+         }
+      } catch (Exception e) {
+         System.out.println(e);
+      }
    }
    
    // OR-3
-
-   public static void runRevRooms() {
-      
+   
+   public static void runRevRes() {
+      ResultSet rs;
+      PreparedStatement statement;
+      if (roomsExist && roomsFilled) {
+      }
    }
    
    // OR-4
 
-   public static void runRevRes() {
-      
+   public static void runRevRooms() {
+      ResultSet rs;
+      PreparedStatement statement;
+      if (roomsExist && roomsFilled) {
+      }
    }
    
    // -- GUEST FUNCTIONS --
@@ -731,7 +981,7 @@ public class InnReservations {
          System.out.println("Enter E to return to switch user type");
          Scanner slay = new Scanner(System.in);
          String na = slay.next();
-         System.out.println("");
+         System.out.println();
          if (na.equals("E"))
             guestState = 0;
          else if (na.equals("Ro"))
@@ -754,10 +1004,12 @@ public class InnReservations {
             rs = statement.executeQuery();
             int i = 1;
             while (rs.next()) {
-               System.out.print(i + "  ");
-               System.out.println(rs.getString("RoomCode") + "  ");
+               //System.out.print(i + "  ");
+               //System.out.println(rs.getString("RoomCode") + "  ");
+               System.out.printf("%2d%5s\n", i, rs.getString("RoomCode"));
                i++;
             }
+            System.out.println();
          } catch (Exception e) {
             System.out.println(e);
          }
@@ -771,7 +1023,10 @@ public class InnReservations {
             if (roomNum < 11 && roomNum > 0 && rs != null) {
                rs.absolute(roomNum);
                System.out.println("");
-               System.out.println("RoomCode  RoomName  Beds  bedType  Occupancy  Price  Decor");
+               //System.out.println("RoomCode  RoomName  Beds  bedType  Occupancy  Price  Decor");
+               String headers = String.format("%11s%27s%7s%10s%12s%9s%14s", "RoomCode", "RoomName", "Beds", "bedType", "Occupancy", "Price", "Decor");
+               System.out.println(headers);
+               System.out.println(getBorder(headers.length()));
                System.out.printf("%11s", rs.getString("RoomCode"));
                System.out.printf("%27s", rs.getString("RoomName"));
                System.out.printf("%7s", rs.getInt("Beds"));
@@ -779,13 +1034,14 @@ public class InnReservations {
                System.out.printf("%12s", rs.getInt("maxOcc"));
                System.out.printf("%9.2f", rs.getFloat("basePrice"));
                System.out.printf("%14s", rs.getString("decor"));
-               System.out.println();
+               System.out.println("\n");
                System.out.println("Enter C to check availability");
                System.out.println("Enter anything else to return to guest menu");
                room = s.next();
                if (room.equals("C"))
                   checkAvai(roomNum, rs.getString("RoomCode"), rs.getFloat("basePrice"), rs.getString("RoomName"),
                         rs.getInt("maxOcc"));
+               System.out.println();
             }
          } catch (Exception e) {
             System.out.println("Bad input");
@@ -866,7 +1122,7 @@ public class InnReservations {
 
    public static void runGuestRes() throws ParseException {
       try {
-         System.out.println("\nEnter the CheckIn date in YYYY DD MM format");
+         System.out.println("Enter the CheckIn date in YYYY DD MM format");
          Scanner scan = new Scanner(System.in);
          String t = scan.nextLine();
          StringTokenizer st = new StringTokenizer(t);
@@ -874,6 +1130,7 @@ public class InnReservations {
          checkIn = checkIn + st.nextToken() + "." + st.nextToken() + "." + st.nextToken();
          System.out.println("\nEnter the CheckOut date in YYYY DD MM format");
          t = scan.nextLine();
+         System.out.println();
          st = new StringTokenizer(t);
          String checkOut = "";
          checkOut = checkOut + st.nextToken() + "." + st.nextToken() + "." + st.nextToken();
@@ -941,7 +1198,7 @@ public class InnReservations {
             System.out.print(realName.get(i) + "\t");
             System.out.print(prices.get(i) + "\n");
          }
-         System.out.println("Enter the room number you would like to view");
+         System.out.println("\nEnter the room number you would like to view");
          System.out.println("Enter anything else to return to guest menu");
          Scanner sce = new Scanner(System.in);
          int sca = sce.nextInt();
@@ -949,16 +1206,18 @@ public class InnReservations {
             s = conn.prepareStatement("SELECT * FROM rooms WHERE RoomCode = '" + validRooms.get(sca - 1) + "'");
             rs = s.executeQuery();
             rs.next();
-            System.out.printf("%3s%11s%27s%7s%10s%12s%9s%14s\n",
-               "No", "RoomCode", "RoomName", "Beds", "bedType", "Occupancy", "Price", "Decor");
-            System.out.print(rs.getString("RoomCode") + "  ");
-            System.out.print(rs.getString("RoomName") + "  ");
-            System.out.print(rs.getInt("Beds") + "  ");
-            System.out.print(rs.getString("bedType") + "  ");
-            System.out.print(rs.getInt("maxOcc") + "  ");
-            System.out.print(rs.getFloat("basePrice") + "  ");
-            System.out.print(rs.getString("decor") + "  ");
-            System.out.println("\nEnter P to place a reservation\nEnter anything else to return to guest menu");
+            String headers = String.format("%11s%27s%7s%10s%12s%9s%14s",
+               "RoomCode", "RoomName", "Beds", "bedType", "Occupancy", "Price", "Decor");
+            System.out.println(headers);
+            System.out.println(getBorder(headers.length()));
+            System.out.printf("%11s", rs.getString("RoomCode"));
+            System.out.printf("%27s", rs.getString("RoomName"));
+            System.out.printf("%7s", rs.getInt("Beds"));
+            System.out.printf("%10s", rs.getString("bedType"));
+            System.out.printf("%12s", rs.getInt("maxOcc"));
+            System.out.printf("%9s", rs.getFloat("basePrice"));
+            System.out.printf("%14s", rs.getString("decor"));
+            System.out.println("\n\nEnter P to place a reservation\nEnter anything else to return to guest menu");
             if (sce.next().equals("P"))
                completeReservation(starts, ends, rs.getFloat("basePrice") * (float) mult, rs.getString("RoomCode"),
                      rs.getString("RoomName"), rs.getInt("maxOcc"));
