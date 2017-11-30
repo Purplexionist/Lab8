@@ -484,9 +484,18 @@ public class InnReservations {
          statement.setString(2, date);
          statement.setString(3, date);
          rs = statement.executeQuery();
-         System.out.printf("%25s%8s%7s%13s%13s%9s%16s%16s%9s%7s\n",
-            "RoomName", "CODE", "Room", "CheckIn", "CheckOut", "Rate", "LastName", "FirstName", "Adults", "Kids");
-         System.out.println(getBorder(25 + 8 + 7 + 13 + 13 + 9 + 16 + 16 + 9 + 7));
+         displayReservations(rs);
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+   }
+
+   public static void displayReservations(ResultSet rs) {
+      String headers = String.format("%25s%8s%7s%13s%13s%9s%16s%16s%9s%7s",
+         "RoomName", "CODE", "Room", "CheckIn", "CheckOut", "Rate", "LastName", "FirstName", "Adults", "Kids");
+      System.out.println(headers);
+      System.out.println(getBorder(headers.length()));
+      try {
          while (rs.next()) {
             System.out.printf("%25s", rs.getString("RoomName"));
             System.out.printf("%8s", rs.getInt("CODE"));
@@ -502,6 +511,7 @@ public class InnReservations {
          }
       } catch (Exception e) {
       }
+
    }
    
    public static void checkRangeAvail() {
@@ -553,7 +563,7 @@ public class InnReservations {
                +             "(select 0 i union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t3) v "
                +          "where selected_date between cast(? as date) and cast(? as date) " // ? 6, 7
                +       ") as dates "
-               +       "left join ( "
+               +       "inner join ( "
                +          "select re.Room, re.CODE, re.CheckIn, re.Checkout "
                +          "from rooms ro, reservations re "
                +          "where ro.RoomCode = re.Room "
