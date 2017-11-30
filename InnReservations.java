@@ -449,23 +449,22 @@ public class InnReservations {
    }
 
    public static void viewSingleRes(ResultSet rs, String date) {
-      int view = 1;
+      boolean view = true;
       Scanner scan = new Scanner(System.in);
-      do {
+      while (view = true) {
          System.out.println();
-         System.out.println("Enter V to view reservation details");
-         System.out.println("Enter anything else to return to menu");
+         System.out.println("Enter 3-digit room code from above list to view reservation details");
+         System.out.println("Enter E to return to menu");
          System.out.print("Input: ");
          String input = scan.next();
-         if (input.toUpperCase().equals("V")) {
-            System.out.print("Enter 3-digit room code from above list: ");
-            String code = scan.next();
+         if (!input.toUpperCase().equals("E")) {
             System.out.println();
-            getSingleRes(code, date);
+            getSingleRes(input, date);
          } else {
-            view = 0;
+            view = false;
+            break;
          }
-      } while (view > 0);
+      } 
    }
 
    public static void getSingleRes(String code, String date) {
@@ -608,23 +607,23 @@ public class InnReservations {
    } 
    
    public static void viewBriefRangeRes(ResultSet rs, String startDate, String endDate) {
-      int view = 1;
+      boolean view = true;
       Scanner scan = new Scanner(System.in);
-      do {
+      while (view = true) {
          System.out.println();
-         System.out.println("Enter V to view reservations");
+         // System.out.println("Enter V to view reservations");
+         System.out.println("Enter 3-digit room code from above list to view reservations");
          System.out.println("Enter anything else to return to menu");
          System.out.print("Input: ");
          String input = scan.next();
-         if (input.toUpperCase().equals("V")) {
-            System.out.print("Enter 3-digit room code from above list: ");
-            String code = scan.next();
+         if (!input.toUpperCase().equals("E")) {
             System.out.println();
-            getRangeRes(code, startDate, endDate);
+            getRangeRes(input, startDate, endDate);
          } else {
-            view = 0;
+            view = false;
+            break;
          }
-      } while (view > 0);
+      } 
    }
    
    public static void getRangeRes(String code, String startDate, String endDate) {
@@ -668,23 +667,22 @@ public class InnReservations {
    }
    
    public static void viewRangeRes() {
-      int view = 1;
+      boolean view = true;
       Scanner scan = new Scanner(System.in);
-      do {
+      while (view = true) {
          System.out.println();
-         System.out.println("Enter D to view details");
-         System.out.println("Enter anything else to return to reservation briefs menu");
+         System.out.println("Enter 5-digit reservation code from above list to view details");
+         System.out.println("Enter E to return to previous");
          System.out.print("Input: ");
          String input = scan.next();
-         if (input.toUpperCase().equals("D")) {
-            System.out.print("Enter 5-digit reservation code from above list: ");
-            String code = scan.next();
+         if (!input.toUpperCase().equals("E")) {
             System.out.println();
-            getResDetails(code);
+            getResDetails(input);
          } else {
-            view = 0;
+            view = false;
+            break;
          }
-      } while (view > 0);
+      } 
    }
 
    public static void getResDetails(String code) {
