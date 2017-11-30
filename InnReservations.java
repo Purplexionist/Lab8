@@ -553,7 +553,7 @@ public class InnReservations {
                +             "(select 0 i union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t3) v "
                +          "where selected_date between cast(? as date) and cast(? as date) " // ? 6, 7
                +       ") as dates "
-               +       "left inner join ( "
+               +       "left join ( "
                +          "select re.Room, re.CODE, re.CheckIn, re.Checkout "
                +          "from rooms ro, reservations re "
                +          "where ro.RoomCode = re.Room "
