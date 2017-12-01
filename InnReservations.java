@@ -956,9 +956,110 @@ public class InnReservations {
    // OR-3
    
    public static void runRevRes() {
+      boolean loop = true;
+      Scanner scan = new Scanner(System.in);
+      ResultSet rs;
+      while (loop) {
+         String startDate = "2010-1-1";
+         String endDate = "2011-12-31";
+         String room = "*";
+         System.out.println("Enter E at any time to return to menu");
+         System.out.print("Select date range? (y/n): ");
+         String input = scan.next().toUpperCase();
+         if (input.equals("Y") || input.equals("YES")) {
+            System.out.print("Enter start date (YYYY-MM-DD): ");
+            startDate = scan.next();
+            if (startDate.toUpperCase().equals("E"))
+               return;
+            System.out.print("Enter end date (YYYY-MM-DD): ");
+            endDate = scan.next();
+            if (endDate.toUpperCase().equals("E"))
+               return;
+         } else if (input.equals("N") || input.equals("NO")) {
+            // Ok then
+         } else if (input.equals("E")) {
+            return;
+         } else {
+            System.out.println("Invalid input");
+         }
+         System.out.print("Select specific room? (y/n): ");
+         input = scan.next().toUpperCase();
+         if (input.equals("Y") || input.equals("YES")) {
+            System.out.println();
+            try {
+               PreparedStatement statement = conn.prepareStatement(""
+                  + "select * "
+                  + "from rooms ro "
+                  + ";"
+               );
+               rs = statement.executeQuery();
+               String headers = String.format("%8s%27s",
+                  "RoomCode", "RoomName");
+               System.out.println(headers);
+               System.out.println(getBorder(headers.length()));
+               while (rs.next()) {
+                  System.out.printf("%8s%27s\n",
+                     rs.getString("RoomCode"),
+                     rs.getString("RoomName"));
+               }
+               System.out.println();
+            } catch (Exception e) {
+               System.out.println(e);
+            }
+            System.out.print("Enter 3-digit room code: ");
+            room = scan.next();
+            if (room.toUpperCase().equals("E"))
+               return;
+         } else if (input.equals("N") || input.equals("NO")) {
+            // Ok then
+         } else if (input.equals("E")) {
+            return;
+         } else {
+            System.out.println("Invalid input");
+         }
+         revRes(room, startDate, endDate);
+      }
+   }
+   
+   public static void revRes(String code, String startDate, String endDate) {
       ResultSet rs;
       PreparedStatement statement;
       if (roomsExist && roomsFilled) {
+         try {
+            if (code.equals("*")) {
+               statement = conn.prepareStatement(""
+                  + "select ro.RoomName, re.CODE, re.CheckIn, re.Checkout "
+                  + "from rooms ro, reservations re "
+                  + "where ro.RoomCode = re.Room "
+                  +     "and ? <= re.CheckIn "
+                  +     "and re.CheckIn <= ? "
+                  + "order by ro.RoomCode, re.CheckIn "
+                  + ";"
+               );
+               statement.setString(1, startDate);
+               statement.setString(2, endDate);
+            } else {
+               statement = conn.prepareStatement(""
+                  + "select ro.RoomName, re.CODE, re.CheckIn, re.Checkout "
+                  + "from rooms ro, reservations re "
+                  + "where ro.RoomCode = re.Room "
+                  +     "and ro.RoomCode = ? "
+                  +     "and ? <= re.CheckIn "
+                  +     "and re.CheckIn <= ? "
+                  + "order by ro.RoomCode, re.CheckIn "
+                  + ";"
+               );
+               statement.setString(1, code);
+               statement.setString(2, startDate);
+               statement.setString(3, endDate);
+            }
+            rs = statement.executeQuery();
+            System.out.println();
+            displayBriefReservations(rs);
+            viewRangeRes();
+         } catch (Exception e) {
+            System.out.println(e);
+         }
       }
    }
    
