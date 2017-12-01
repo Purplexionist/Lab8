@@ -1,3 +1,9 @@
+/**
+ * Tina Rickard, William Eggert
+ * CSC 365-03
+ * Lab 8: Database Connectivity with JDBC
+ */
+
 import java.io.*;
 import java.util.*;
 import java.sql.*;
@@ -780,6 +786,8 @@ public class InnReservations {
          } catch (Exception e) {
             System.out.println(e);
          }
+      } else {
+         System.out.println("Tables not created/filled");
       }
    }
    
@@ -830,7 +838,9 @@ public class InnReservations {
          } catch (Exception e) {
             System.out.println(e);
          }
-      }
+      } else {
+         System.out.println("Tables not created/filled");
+      } 
    }
    
    public static void monthlyRev() {
@@ -880,7 +890,9 @@ public class InnReservations {
          } catch (Exception e) {
             System.out.println(e);
          }
-      }
+      } else {
+         System.out.println("Tables not created/filled");
+      } 
    }
    
    public static void printResTables(ResultSet rs) {
@@ -956,71 +968,78 @@ public class InnReservations {
    // OR-3
    
    public static void runRevRes() {
-      boolean loop = true;
-      Scanner scan = new Scanner(System.in);
-      ResultSet rs;
-      while (loop) {
-         String startDate = "2010-1-1";
-         String endDate = "2011-12-31";
-         String room = "*";
-         System.out.println("Enter E at any time to return to menu");
-         System.out.print("Select date range? (y/n): ");
-         String input = scan.next().toUpperCase();
-         if (input.equals("Y") || input.equals("YES")) {
-            System.out.print("Enter start date (YYYY-MM-DD): ");
-            startDate = scan.next();
-            if (startDate.toUpperCase().equals("E"))
+      if (roomsExist && roomsFilled) {
+         boolean loop = true;
+         Scanner scan = new Scanner(System.in);
+         while (loop) {
+            String startDate = "2010-1-1";
+            String endDate = "2011-12-31";
+            String room = "*";
+            System.out.println("Enter E at any time to return to menu");
+            System.out.print("Select date range? (y/n): ");
+            String input = scan.next().toUpperCase();
+            if (input.equals("Y") || input.equals("YES")) {
+               System.out.print("Enter start date (YYYY-MM-DD): ");
+               startDate = scan.next();
+               if (startDate.toUpperCase().equals("E"))
+                  return;
+               System.out.print("Enter end date (YYYY-MM-DD): ");
+               endDate = scan.next();
+               if (endDate.toUpperCase().equals("E"))
+                  return;
+            } else if (input.equals("N") || input.equals("NO")) {
+               // Ok then
+            } else if (input.equals("E")) {
                return;
-            System.out.print("Enter end date (YYYY-MM-DD): ");
-            endDate = scan.next();
-            if (endDate.toUpperCase().equals("E"))
-               return;
-         } else if (input.equals("N") || input.equals("NO")) {
-            // Ok then
-         } else if (input.equals("E")) {
-            return;
-         } else {
-            System.out.println("Invalid input");
-         }
-         System.out.print("Select specific room? (y/n): ");
-         input = scan.next().toUpperCase();
-         if (input.equals("Y") || input.equals("YES")) {
-            System.out.println();
-            try {
-               PreparedStatement statement = conn.prepareStatement(""
-                  + "select * "
-                  + "from rooms ro "
-                  + ";"
-               );
-               rs = statement.executeQuery();
-               String headers = String.format("%8s%27s",
-                  "RoomCode", "RoomName");
-               System.out.println(headers);
-               System.out.println(getBorder(headers.length()));
-               while (rs.next()) {
-                  System.out.printf("%8s%27s\n",
-                     rs.getString("RoomCode"),
-                     rs.getString("RoomName"));
-               }
-               System.out.println();
-            } catch (Exception e) {
-               System.out.println(e);
+            } else {
+               System.out.println("Invalid input");
             }
-            System.out.print("Enter 3-digit room code: ");
-            room = scan.next();
-            if (room.toUpperCase().equals("E"))
+            System.out.print("Select specific room? (y/n): ");
+            input = scan.next().toUpperCase();
+            if (input.equals("Y") || input.equals("YES")) {
+               System.out.println();
+               printRooms();
+               System.out.print("Enter 3-digit room code: ");
+               room = scan.next();
+               if (room.toUpperCase().equals("E"))
+                  return;
+            } else if (input.equals("N") || input.equals("NO")) {
+               // Ok then
+            } else if (input.equals("E")) {
                return;
-         } else if (input.equals("N") || input.equals("NO")) {
-            // Ok then
-         } else if (input.equals("E")) {
-            return;
-         } else {
-            System.out.println("Invalid input");
+            } else {
+               System.out.println("Invalid input");
+            }
+            revRes(room, startDate, endDate);
          }
-         revRes(room, startDate, endDate);
+      } else {
+         System.out.println("Tables not created/filled");
       }
    }
-   
+
+   public static void printRooms() {
+      try {
+         PreparedStatement statement = conn.prepareStatement(""
+            + "select * "
+            + "from rooms ro "
+            + ";"
+         );
+         ResultSet rs = statement.executeQuery();
+         String headers = String.format("%8s%27s",
+            "RoomCode", "RoomName");
+         System.out.println(headers);
+         System.out.println(getBorder(headers.length()));
+         while (rs.next()) {
+            System.out.printf("%8s%27s\n",
+               rs.getString("RoomCode"),
+               rs.getString("RoomName"));
+         }
+         System.out.println();
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+   }
+
    public static void revRes(String code, String startDate, String endDate) {
       ResultSet rs;
       PreparedStatement statement;
@@ -1066,9 +1085,102 @@ public class InnReservations {
    // OR-4
 
    public static void runRevRooms() {
+      if (roomsExist && roomsFilled) {
+         boolean loop = true;
+         Scanner scan = new Scanner(System.in);
+         while (loop) {
+            printRooms();
+            System.out.println("Options:");
+            System.out.println("1 - View room info");
+            System.out.println("2 - View room reservations");
+            System.out.print("Input: ");
+            String input = scan.next();
+            if (input.toUpperCase().equals("E"))
+               return;
+            System.out.print("Enter 3-digit code of room to view: ");
+            String code = scan.next();
+            if (input.equals("1")) {
+               displayRoomInfo(code);
+            } else if (input.equals("2")) {
+               displayRoomRes(code);
+            } else {
+               System.out.println("Invalid input");
+            }
+         }
+      } else {
+         System.out.println("Tables not created/filled");
+      }
+   }
+   
+   public static void displayRoomInfo(String code) {
       ResultSet rs;
       PreparedStatement statement;
-      if (roomsExist && roomsFilled) {
+      try {
+         statement = conn.prepareStatement(""
+            + "select r.*, (r.DaysOccupied / z.Days) * 100 as PercentDays, "
+            +    "(r.TotalRevenue / z.Revenue) * 100 as PercentRevenue "
+            + "from "
+            +    "(select ro.*, sum(datediff(re.Checkout, re.CheckIn)) as DaysOccupied, "
+            +       "sum(re.Rate * datediff(re.Checkout, re.CheckIn)) as TotalRevenue "
+            +    "from rooms ro, reservations re "
+            +    "where ro.RoomCode = re.Room "
+            +       "and year(re.Checkout) = 2010 "
+            +       "and ro.RoomCode = ? "
+            +    ") as r, "
+            +    "(select sum(datediff(re.Checkout, re.CheckIn)) as Days, "
+            +       "sum(re.Rate * datediff(re.Checkout, re.CheckIn)) as Revenue "
+            +    "from rooms ro, reservations re "
+            +    "where ro.RoomCode = re.Room "
+            +       "and year(re.Checkout) = 2010 "
+            +    ") as z "
+            + ";"
+         );
+         statement.setString(1, code);
+         rs = statement.executeQuery();
+         System.out.println();
+         String headers = String.format("%8s%27s%6s%9s%8s%10s%13s%14s%14s%13s%17s",
+            "RoomCode", "RoomName", "Beds", "bedType", "maxOcc", "basePrice",
+            "decor", "DaysOccupied", "TotalRevenue", "PercentDays", "PercentRevenue");
+         System.out.println(headers);
+         System.out.println(getBorder(headers.length()));
+         while (rs.next()) {
+            System.out.printf("%8s", rs.getString("RoomCode"));
+            System.out.printf("%27s", rs.getString("RoomName"));
+            System.out.printf("%6s", rs.getString("Beds"));
+            System.out.printf("%9s", rs.getString("bedType"));
+            System.out.printf("%8s", rs.getString("maxOcc"));
+            System.out.printf("%10.2f", rs.getFloat("basePrice"));
+            System.out.printf("%13s", rs.getString("decor"));
+            System.out.printf("%14s", rs.getString("DaysOccupied"));
+            System.out.printf("%14s", rs.getString("TotalRevenue"));
+            System.out.printf("%13.2f", rs.getFloat("PercentDays"));
+            System.out.printf("%17.2f", rs.getFloat("PercentRevenue"));
+         }
+         System.out.println("\n");
+      } catch (Exception e) {
+         System.out.print(e);
+      }
+   }
+
+   public static void displayRoomRes(String code) {
+      ResultSet rs;
+      PreparedStatement statement;
+      try {
+         statement = conn.prepareStatement(""
+            + "select ro.RoomName, re.* " 
+            + "from rooms ro, reservations re "
+            + "where ro.RoomCode = re.Room "
+            +     "and re.Room = ? "
+            + "order by re.CheckIn "
+            + ";"
+         );
+         statement.setString(1, code);
+         rs = statement.executeQuery();
+         displayBriefReservations(rs);
+         viewRangeRes();
+      }
+      catch (Exception e) {
+         System.out.print(e);
       }
    }
    
@@ -1105,8 +1217,6 @@ public class InnReservations {
             rs = statement.executeQuery();
             int i = 1;
             while (rs.next()) {
-               //System.out.print(i + "  ");
-               //System.out.println(rs.getString("RoomCode") + "  ");
                System.out.printf("%2d%5s\n", i, rs.getString("RoomCode"));
                i++;
             }
@@ -1124,7 +1234,6 @@ public class InnReservations {
             if (roomNum < 11 && roomNum > 0 && rs != null) {
                rs.absolute(roomNum);
                System.out.println("");
-               //System.out.println("RoomCode  RoomName  Beds  bedType  Occupancy  Price  Decor");
                String headers = String.format("%11s%27s%7s%10s%12s%9s%14s", "RoomCode", "RoomName", "Beds", "bedType", "Occupancy", "Price", "Decor");
                System.out.println(headers);
                System.out.println(getBorder(headers.length()));
