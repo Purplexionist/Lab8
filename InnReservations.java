@@ -925,6 +925,7 @@ public class InnReservations {
                rs.getInt("TOTALS") // 13
             );
          }
+         System.out.println();
       } catch (Exception e) {
          System.out.println(e);
       }
@@ -960,6 +961,7 @@ public class InnReservations {
                rs.getFloat("TOTALS") // 13
             );
          }
+         System.out.println();
       } catch (Exception e) {
          System.out.println(e);
       }
@@ -1093,6 +1095,7 @@ public class InnReservations {
             System.out.println("Options:");
             System.out.println("1 - View room info");
             System.out.println("2 - View room reservations");
+            System.out.println("E - Return to Owner menu");
             System.out.print("Input: ");
             String input = scan.next();
             if (input.toUpperCase().equals("E"))
