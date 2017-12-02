@@ -9,6 +9,7 @@ to run the program
 type
 
 java -cp .:mysql-connector-java-5.1.44-bin.jar InnReservations
+
 after compiling
 
 
